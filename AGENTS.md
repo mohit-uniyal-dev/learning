@@ -7,8 +7,9 @@ This repository uses **vanilla ES Modules (`type="module"`)** with zero build st
 - `site/styles/tokens.css` — Design system CSS variables (`:root` palette, radii, shadows, typography). **Reuse existing variables; never introduce ad-hoc hex colors.**
 - `site/styles/components.css` — Layout, card, button, simulator, quiz, and DSA widget styling.
 - `site/js/engine.js` — State management, isolated per-step state (`getStepState`), full replay reset (`resetCourseState`), and navigation shell renderer.
-- `site/js/widgets.js` — Reusable interactive `WidgetRenderers` (`raw-llm-sim`, `concentric-layers`, `token-disclosure`, `gate-puzzle`, `reviewer-compare`, `eval-bench`, `quiz-blueprint`, `dsa-two-pointer`, `dsa-quiz`).
+- `site/js/widgets.js` — Reusable interactive `WidgetRenderers` (`raw-llm-sim`, `concentric-layers`, `token-disclosure`, `gate-puzzle`, `reviewer-compare`, `eval-bench`, `quiz-blueprint`, `memory-tradeoffs`, `compaction-slider`, `approval-pipeline`, `memory-quiz`, `dsa-two-pointer`, `dsa-quiz`).
 - `site/js/courses/agent-harness.js` — Course data & `MODES` (`Generic Blueprint` vs `Sanitized Case Study`) for the 4-Layer AI Agent Harness.
+- `site/js/courses/runtime-memory.js` — Course data & `MODES` (`Generic Voice/Chat Agent` vs `Sanitized Form-Extraction Microservice`) for Runtime Agent Memory & Context Compaction.
 - `site/js/courses/dsa-two-pointer.js` — Course data for the DSA Two-Pointer visual template.
 - `site/js/app.js` — Entry point wiring `COURSES` and `WidgetRenderers` into `engine.js`.
 

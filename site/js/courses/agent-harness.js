@@ -43,7 +43,7 @@ export const agentHarnessCourse = {
       title: "Keep Context Lean with 3-Stage Progressive Disclosure",
       lead: "Dumping every architecture manual into the prompt wastes tokens and confuses the model. Toggle between dumping all docs vs. progressive disclosure.",
       widget: "token-disclosure",
-      takeaway: "<strong>Key Insight:</strong> Keep root <code>AGENTS.md</code> under 100 lines, store live state on disk in <code>.agent-memory/</code>, and load domain skills only when triggered."
+      takeaway: "<strong>Key Insight:</strong> Keep root <code>AGENTS.md</code> under 100 lines, consolidate facts in <code>.agent-memory/</code> (superseding stale entries), and load domain skills only when triggered."
     },
     {
       id: "layer-2",
@@ -73,7 +73,7 @@ export const agentHarnessCourse = {
       id: "mastery-check",
       kicker: "Step 7 · Mastery Check & Blueprint",
       title: "Verify Your Understanding & Take the Blueprint",
-      lead: "Answer two quick questions to lock in the 4-layer workflow, then grab the copy-pasteable starter prompt and GitHub Pages workflow.",
+      lead: "Answer two quick questions to lock in the 4-layer workflow, then grab the copy-pasteable starter prompt.",
       widget: "quiz-blueprint",
       takeaway: "<strong>You're ready!</strong> Use the restart button below to replay any step or switch between Generic Blueprint and Sanitized Case Study modes."
     }

@@ -317,6 +317,11 @@ body {
   background: var(--success-soft);
 }
 
+.run-item--fail {
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+}
+
 .pill {
   font-size: 12px;
   font-weight: 700;
@@ -508,6 +513,17 @@ body {
   font-weight: 700;
   color: var(--success);
   text-align: right;
+}
+
+/* Range Slider */
+.slider-wrap {
+  margin: 14px 0;
+}
+
+.range-input {
+  width: 100%;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
 }
 
 /* Quiz Options */

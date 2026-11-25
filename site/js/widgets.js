@@ -3,6 +3,9 @@
  * Each renderer receives (container, step, ctx, helpers).
  */
 export const WidgetRenderers = {
+  /* ========================================================================
+     COURSE 1 WIDGETS: 4-Layer Production AI Agent Harness
+     ======================================================================== */
   "raw-llm-sim": (container, step, ctx, { getStepState, render }) => {
     const s = getStepState(step.id, { runs: [] });
     const outcomes = [
@@ -178,7 +181,7 @@ export const WidgetRenderers = {
     container.querySelector("#progBtn").onclick = () => { s.progressive = true; render(); };
   },
 
-  "gate-puzzle": (container, step, ctx, { getStepState, render }) => {
+  "gate-puzzle": (container, step, _ctx, { getStepState, render }) => {
     const s = getStepState(step.id, { fault: "secret" });
     const faults = [
       {
@@ -408,6 +411,220 @@ Action: Ready for Layer 3 fresh-context review!`
     };
   },
 
+  /* ========================================================================
+     COURSE 2 WIDGETS: Runtime AI Agent Memory & Context Compaction
+     ======================================================================== */
+  "memory-tradeoffs": (container, step, ctx, { getStepState, render }) => {
+    const s = getStepState(step.id, { approach: "rag" });
+    const options = [
+      {
+        id: "flat",
+        title: "1. Flat Chat History",
+        badge: "Context Explosion",
+        pill: "pill-fail",
+        tokens: "~14,000 tokens / turn",
+        body: `Appends every raw message and ${ctx.rawPayloadLabel} to the prompt. Costs and latency grow quadratically until the context window overflows.`
+      },
+      {
+        id: "rag",
+        title: "2. Naive Vector RAG",
+        badge: "Fact Conflict Bug",
+        pill: "pill-warn",
+        tokens: "~1,400 tokens / turn",
+        body: `Retrieves top-k matching chunks, but cannot resolve contradictions—returning both ${ctx.conflictOld} AND ${ctx.conflictNew} so the LLM guesses blindly.`
+      },
+      {
+        id: "graph",
+        title: "3. Custom Knowledge Graph",
+        badge: "High Engineering Cost",
+        pill: "pill-warn",
+        tokens: "~180 tokens / turn",
+        body: "Tracks entity relationships accurately, but requires maintaining strict schemas and custom graph mutation pipelines just to overwrite an updated fact."
+      },
+      {
+        id: "bank",
+        title: "4. Stateful Memory Bank",
+        badge: "Optimal Balance",
+        pill: "pill-pass",
+        tokens: "~24 tokens / turn",
+        body: `Runs asynchronously in the background to extract canonical facts, deduplicate notes, and overwrite stale state—keeping only ${ctx.conflictNew}.`
+      }
+    ];
+
+    const active = options.find((o) => o.id === s.approach) || options[1];
+    container.innerHTML = `
+      <div class="sim-box">
+        <div class="sim-header">
+          <span class="sim-label">Compare Memory Architectures</span>
+          <span class="pill ${active.pill}">${active.tokens}</span>
+        </div>
+        <div class="fault-grid">
+          ${options.map((o) => `
+            <button class="fault-btn ${o.id === s.approach ? "selected" : ""}" data-approach="${o.id}">
+              <div class="fault-title">${o.title}</div>
+              <div class="fault-desc">${o.badge}</div>
+            </button>
+          `).join("")}
+        </div>
+        <div class="run-item ${active.id === "bank" ? "run-item--pass" : active.id === "flat" ? "run-item--fail" : "run-item--warn"}">
+          <div>${active.body}</div>
+          <span class="pill ${active.pill}">${active.badge}</span>
+        </div>
+      </div>
+    `;
+
+    container.querySelectorAll("[data-approach]").forEach((btn) => {
+      btn.onclick = () => {
+        s.approach = btn.getAttribute("data-approach");
+        render();
+      };
+    });
+  },
+
+  "compaction-slider": (container, step, ctx, { getStepState, render }) => {
+    const s = getStepState(step.id, { turns: 25, compacted: true });
+    const rawTokens = s.turns * 320;
+    const compactedTokens = 92 + 55 + 24; // ~92 summary + ~40-word sliding window + ~24 memory facts
+    const activeTokens = s.compacted ? compactedTokens : rawTokens;
+    const savingsPct = Math.max(0, Math.round((1 - compactedTokens / rawTokens) * 100));
+    const barPct = Math.min(100, Math.round((activeTokens / 16000) * 100));
+
+    container.innerHTML = `
+      <div class="sim-box">
+        <div class="sim-header">
+          <span class="sim-label">Session Length: ${s.turns} Turns (${ctx.domainName})</span>
+          <div class="btn-group">
+            <button id="rawHistBtn" class="btn btn-sm ${!s.compacted ? "btn-primary" : ""}">Raw Transcript</button>
+            <button id="compactHistBtn" class="btn btn-sm ${s.compacted ? "btn-primary" : ""}">Rolling Compaction</button>
+          </div>
+        </div>
+
+        <div class="slider-wrap">
+          <input id="turnSlider" class="range-input" type="range" min="5" max="50" step="5" value="${s.turns}" />
+        </div>
+
+        <div class="meter-header">
+          <span>Tokens Sent to Classifier / Extractor</span>
+          <span style="color:${s.compacted ? "var(--success)" : "var(--danger)"};">
+            ${activeTokens.toLocaleString()} tokens ${s.compacted ? `(${savingsPct}% saved)` : "(Unbounded)"}
+          </span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill" style="width:${barPct}%; background:${s.compacted ? "var(--success)" : "var(--danger)"};"></div>
+        </div>
+
+        <div class="stage-pills">
+          <div class="stage-chip">
+            <strong>Rolling Summary</strong><br/>
+            <span class="muted-text">~92 tokens condensing earlier session history without raw fluff.</span>
+          </div>
+          <div class="stage-chip">
+            <strong>Sliding Window</strong><br/>
+            <span class="muted-text">~40 words (~55 tokens) of immediate recent user/DOM context.</span>
+          </div>
+          <div class="stage-chip">
+            <strong>Canonical Facts</strong><br/>
+            <span class="muted-text">~24 tokens of deduplicated long-term state from memory store.</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.querySelector("#turnSlider").oninput = (e) => {
+      s.turns = Number(e.target.value);
+      render();
+    };
+    container.querySelector("#rawHistBtn").onclick = () => { s.compacted = false; render(); };
+    container.querySelector("#compactHistBtn").onclick = () => { s.compacted = true; render(); };
+  },
+
+  "approval-pipeline": (container, step, ctx, { getStepState, render }) => {
+    const s = getStepState(step.id, { approved: false });
+    container.innerHTML = `
+      <div class="sim-box">
+        <div class="sim-header">
+          <span class="sim-label">3-Stage Runtime Pipeline</span>
+          <span class="pill ${s.approved ? "pill-pass" : "pill-warn"}">
+            ${s.approved ? "Action Executed" : "Awaiting Human Approval"}
+          </span>
+        </div>
+        <div class="run-feed" style="margin-top:0;">
+          <div class="run-item">
+            <div><strong>Stage 1 · Deterministic Ingestion (0 LLM Tokens):</strong> ${ctx.stage1Text}</div>
+            <span class="pill pill-pass">Pure Code</span>
+          </div>
+          <div class="run-item">
+            <div><strong>Stage 2 · Compact Extraction + Deterministic Resolver:</strong> ${ctx.stage2Text}</div>
+            <span class="pill pill-pass">Read-Only</span>
+          </div>
+          <div class="run-item ${s.approved ? "run-item--pass" : "run-item--warn"}">
+            <div>
+              <strong>Stage 3 · Proposal Card:</strong> ${ctx.stage3Proposal}
+            </div>
+            <button id="approveActionBtn" class="btn btn-primary btn-sm">
+              ${s.approved ? "✓ Approved & Committed" : "Approve Action"}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.querySelector("#approveActionBtn").onclick = () => {
+      s.approved = !s.approved;
+      render();
+    };
+  },
+
+  "memory-quiz": (container, step, ctx, { getStepState, render, resetCourseState }) => {
+    const s = getStepState(step.id, { q1: null, q2: null });
+    container.innerHTML = `
+      <div class="sim-box">
+        <div class="quiz-block">
+          <div class="quiz-q">1. Why does Naive Vector RAG struggle when user facts or form values change over time?</div>
+          ${[
+            { idx: 0, text: "It retrieves both outdated and current chunks without resolving which fact supersedes the other", ok: true },
+            { idx: 1, text: "It always sends the entire 50-turn raw transcript in every prompt", ok: false }
+          ].map((opt) => `
+            <button class="quiz-option ${s.q1 === opt.idx ? (opt.ok ? "correct" : "wrong") : ""}" data-q="q1" data-idx="${opt.idx}">
+              ${opt.text}
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="quiz-block quiz-block--last">
+          <div class="quiz-q">2. How should deterministic transformations (like dates or schema normalization) be handled?</div>
+          ${[
+            { idx: 0, text: "Ask a second LLM to double-check the date math", ok: false },
+            { idx: 1, text: "Offload them to pure deterministic code resolvers and gate side effects behind approval", ok: true }
+          ].map((opt) => `
+            <button class="quiz-option ${s.q2 === opt.idx ? (opt.ok ? "correct" : "wrong") : ""}" data-q="q2" data-idx="${opt.idx}">
+              ${opt.text}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="mastery-bar">
+        <button id="restartMemBtn" class="btn btn-primary">↺ Restart Memory Lesson</button>
+        <span class="muted-text">
+          ${s.q1 === 0 && s.q2 === 1 ? `★ Mastery Complete (${ctx.label})!` : "Answer both questions above to complete mastery check."}
+        </span>
+      </div>
+    `;
+
+    container.querySelectorAll(".quiz-option").forEach((btn) => {
+      btn.onclick = () => {
+        const q = btn.getAttribute("data-q");
+        s[q] = Number(btn.getAttribute("data-idx"));
+        render();
+      };
+    });
+    container.querySelector("#restartMemBtn").onclick = () => resetCourseState();
+  },
+
+  /* ========================================================================
+     COURSE 3 WIDGETS: DSA Visual Template (Two-Pointer Pattern)
+     ======================================================================== */
   "dsa-two-pointer": (container, step, _ctx, { getStepState, render }) => {
     const arr = [2, 5, 8, 11, 15, 21];
     const target = 19;
